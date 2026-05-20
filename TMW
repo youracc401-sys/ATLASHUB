@@ -1,0 +1,635 @@
+-- ╔════════════════════════════════════╗
+-- ║      TMW HUB SELECTOR             ║
+-- ╚════════════════════════════════════╝
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- SCRIPT
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+local SCRIPTS = {
+    {
+        name = "48x On Top",
+        icon = "⚡",
+        iconBg = Color3.fromRGB(120,60,255),
+        desc = "Best Universal Hub",
+        tag = "LIVE",
+        tagColor = Color3.fromRGB(50,255,120),
+        url = "https://raw.githubusercontent.com/48xHUB/48xHUB/main/48xOnTop",
+    },
+}
+
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- CLEANUP
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+if PlayerGui:FindFirstChild("TMW_HUB_SELECTOR") then
+    PlayerGui.TMW_HUB_SELECTOR:Destroy()
+end
+
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- GUI
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+local SG = Instance.new("ScreenGui")
+SG.Name = "TMW_HUB_SELECTOR"
+SG.ResetOnSpawn = false
+SG.IgnoreGuiInset = true
+SG.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+SG.DisplayOrder = 999
+SG.Parent = PlayerGui
+
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- FUNCTIONS
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+local function corner(obj,r)
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0,r or 12)
+    c.Parent = obj
+end
+
+local function stroke(obj,col,t,trans)
+    local s = Instance.new("UIStroke")
+    s.Color = col
+    s.Thickness = t or 1
+    s.Transparency = trans or 0.4
+    s.Parent = obj
+end
+
+local function tween(obj,props,time,style,dir)
+    return TweenService:Create(
+        obj,
+        TweenInfo.new(
+            time or 0.25,
+            style or Enum.EasingStyle.Quart,
+            dir or Enum.EasingDirection.Out
+        ),
+        props
+    )
+end
+
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- SAFE EXECUTOR
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+local function executeScript(url)
+
+    local success,response = pcall(function()
+        return game:HttpGet(url)
+    end)
+
+    if not success then
+        return false,response
+    end
+
+    local func,err = loadstring(response)
+
+    if not func then
+        return false,err
+    end
+
+    local ok,runErr = pcall(func)
+
+    if not ok then
+        return false,runErr
+    end
+
+    return true
+end
+
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- MAIN HUB
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+local HUB_W = 430
+local HUB_H = 170
+
+local Hub = Instance.new("Frame")
+Hub.Size = UDim2.new(0,HUB_W,0,0)
+Hub.Position = UDim2.new(0.5,-215,0.5,-85)
+Hub.BackgroundColor3 = Color3.fromRGB(10,8,22)
+Hub.BorderSizePixel = 0
+Hub.ClipsDescendants = true
+Hub.Parent = SG
+
+corner(Hub,22)
+stroke(Hub,Color3.fromRGB(130,70,255),1.5,0.3)
+
+local Grad = Instance.new("UIGradient")
+Grad.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0,Color3.fromRGB(24,12,50)),
+    ColorSequenceKeypoint.new(1,Color3.fromRGB(8,5,18))
+}
+Grad.Rotation = 135
+Grad.Parent = Hub
+
+-- OPEN ANIMATION
+
+task.defer(function()
+    tween(
+        Hub,
+        {Size = UDim2.new(0,HUB_W,0,HUB_H)},
+        0.5,
+        Enum.EasingStyle.Back
+    ):Play()
+end)
+
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- HEADER
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+local Header = Instance.new("Frame")
+Header.Size = UDim2.new(1,0,0,72)
+Header.BackgroundColor3 = Color3.fromRGB(20,10,40)
+Header.BorderSizePixel = 0
+Header.Parent = Hub
+
+corner(Header,22)
+
+local Fill = Instance.new("Frame")
+Fill.Size = UDim2.new(1,0,0,22)
+Fill.Position = UDim2.new(0,0,1,-22)
+Fill.BackgroundColor3 = Color3.fromRGB(20,10,40)
+Fill.BorderSizePixel = 0
+Fill.Parent = Header
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1,-120,0,24)
+Title.Position = UDim2.new(0,18,0,12)
+Title.BackgroundTransparency = 1
+Title.Text = "TMW HUB SELECTOR"
+Title.TextColor3 = Color3.new(1,1,1)
+Title.TextSize = 16
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = Header
+
+local Sub = Instance.new("TextLabel")
+Sub.Size = UDim2.new(1,-120,0,18)
+Sub.Position = UDim2.new(0,18,0,38)
+Sub.BackgroundTransparency = 1
+Sub.Text = "Compact Advanced Loader"
+Sub.TextColor3 = Color3.fromRGB(170,140,255)
+Sub.TextSize = 11
+Sub.Font = Enum.Font.Gotham
+Sub.TextXAlignment = Enum.TextXAlignment.Left
+Sub.Parent = Header
+
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- FOLD BUTTON
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+local Folded = false
+
+local Fold = Instance.new("TextButton")
+Fold.Size = UDim2.new(0,28,0,28)
+Fold.Position = UDim2.new(1,-76,0.5,-14)
+Fold.BackgroundColor3 = Color3.fromRGB(55,25,95)
+Fold.Text = "▲"
+Fold.TextColor3 = Color3.new(1,1,1)
+Fold.TextSize = 13
+Fold.Font = Enum.Font.GothamBold
+Fold.Parent = Header
+
+corner(Fold,9)
+stroke(Fold,Color3.fromRGB(140,90,255),1,0.4)
+
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- CLOSE BUTTON
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+local Close = Instance.new("TextButton")
+Close.Size = UDim2.new(0,28,0,28)
+Close.Position = UDim2.new(1,-40,0.5,-14)
+Close.BackgroundColor3 = Color3.fromRGB(95,25,45)
+Close.Text = "✕"
+Close.TextColor3 = Color3.new(1,1,1)
+Close.TextSize = 13
+Close.Font = Enum.Font.GothamBold
+Close.Parent = Header
+
+corner(Close,9)
+stroke(Close,Color3.fromRGB(255,80,90),1,0.4)
+
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- SCRIPT CARD
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+local Card = Instance.new("TextButton")
+Card.Size = UDim2.new(1,-24,0,68)
+Card.Position = UDim2.new(0,12,0,88)
+Card.BackgroundColor3 = Color3.fromRGB(22,14,45)
+Card.BorderSizePixel = 0
+Card.Text = ""
+Card.Parent = Hub
+
+corner(Card,16)
+stroke(Card,Color3.fromRGB(120,70,255),1,0.45)
+
+local Accent = Instance.new("Frame")
+Accent.Size = UDim2.new(0,4,1,-16)
+Accent.Position = UDim2.new(0,0,0,8)
+Accent.BackgroundColor3 = Color3.fromRGB(120,60,255)
+Accent.BorderSizePixel = 0
+Accent.Parent = Card
+
+corner(Accent,20)
+
+local Icon = Instance.new("Frame")
+Icon.Size = UDim2.new(0,42,0,42)
+Icon.Position = UDim2.new(0,16,0.5,-21)
+Icon.BackgroundColor3 = Color3.fromRGB(120,60,255)
+Icon.BorderSizePixel = 0
+Icon.Parent = Card
+
+corner(Icon,12)
+
+local IconText = Instance.new("TextLabel")
+IconText.Size = UDim2.new(1,0,1,0)
+IconText.BackgroundTransparency = 1
+IconText.Text = "⚡"
+IconText.TextColor3 = Color3.new(1,1,1)
+IconText.TextSize = 22
+IconText.Font = Enum.Font.GothamBold
+IconText.Parent = Icon
+
+local Name = Instance.new("TextLabel")
+Name.Size = UDim2.new(0,200,0,22)
+Name.Position = UDim2.new(0,72,0,10)
+Name.BackgroundTransparency = 1
+Name.Text = "48x On Top"
+Name.TextColor3 = Color3.new(1,1,1)
+Name.TextSize = 14
+Name.Font = Enum.Font.GothamBold
+Name.TextXAlignment = Enum.TextXAlignment.Left
+Name.Parent = Card
+
+local Desc = Instance.new("TextLabel")
+Desc.Size = UDim2.new(0,220,0,18)
+Desc.Position = UDim2.new(0,72,0,36)
+Desc.BackgroundTransparency = 1
+Desc.Text = "Best Universal Hub"
+Desc.TextColor3 = Color3.fromRGB(180,150,255)
+Desc.TextSize = 11
+Desc.Font = Enum.Font.Gotham
+Desc.TextXAlignment = Enum.TextXAlignment.Left
+Desc.Parent = Card
+
+local Tag = Instance.new("Frame")
+Tag.Size = UDim2.new(0,46,0,20)
+Tag.Position = UDim2.new(1,-96,0.5,-10)
+Tag.BackgroundColor3 = Color3.fromRGB(50,255,120)
+Tag.BorderSizePixel = 0
+Tag.Parent = Card
+
+corner(Tag,20)
+
+local TagText = Instance.new("TextLabel")
+TagText.Size = UDim2.new(1,0,1,0)
+TagText.BackgroundTransparency = 1
+TagText.Text = "LIVE"
+TagText.TextColor3 = Color3.new(1,1,1)
+TagText.TextSize = 10
+TagText.Font = Enum.Font.GothamBold
+TagText.Parent = Tag
+
+local Arrow = Instance.new("TextLabel")
+Arrow.Size = UDim2.new(0,28,0,28)
+Arrow.Position = UDim2.new(1,-36,0.5,-14)
+Arrow.BackgroundTransparency = 1
+Arrow.Text = "›"
+Arrow.TextColor3 = Color3.fromRGB(180,140,255)
+Arrow.TextSize = 26
+Arrow.Font = Enum.Font.GothamBold
+Arrow.Parent = Card
+
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- MOVABLE SUPPORT
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+local dragging = false
+local dragStart
+local startPos
+
+Header.InputBegan:Connect(function(input)
+
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+
+        dragging = true
+        dragStart = input.Position
+        startPos = Hub.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+
+    if dragging and (
+        input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch
+    ) then
+
+        local delta = input.Position - dragStart
+
+        Hub.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- FOLD SYSTEM
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Fold.MouseButton1Click:Connect(function()
+
+    Folded = not Folded
+
+    if Folded then
+
+        Fold.Text = "▼"
+
+        tween(
+            Hub,
+            {Size = UDim2.new(0,HUB_W,0,72)},
+            0.35
+        ):Play()
+
+    else
+
+        Fold.Text = "▲"
+
+        tween(
+            Hub,
+            {Size = UDim2.new(0,HUB_W,0,HUB_H)},
+            0.35
+        ):Play()
+    end
+end)
+
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- CLOSE SYSTEM
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Close.MouseButton1Click:Connect(function()
+
+    tween(
+        Hub,
+        {
+            Size = UDim2.new(0,HUB_W,0,0),
+            BackgroundTransparency = 1
+        },
+        0.35,
+        Enum.EasingStyle.Back,
+        Enum.EasingDirection.In
+    ):Play()
+
+    task.wait(0.4)
+
+    SG:Destroy()
+end)
+
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- ADVANCED LOADER
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+local Loader = Instance.new("Frame")
+Loader.Size = UDim2.new(0,260,0,150)
+Loader.Position = UDim2.new(0.5,-130,0.5,-75)
+Loader.BackgroundColor3 = Color3.fromRGB(15,10,28)
+Loader.BorderSizePixel = 0
+Loader.Visible = false
+Loader.Parent = SG
+
+corner(Loader,20)
+stroke(Loader,Color3.fromRGB(130,70,255),1.5,0.25)
+
+local LoaderGrad = Instance.new("UIGradient")
+LoaderGrad.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0,Color3.fromRGB(28,12,55)),
+    ColorSequenceKeypoint.new(1,Color3.fromRGB(10,5,20))
+}
+LoaderGrad.Rotation = 135
+LoaderGrad.Parent = Loader
+
+local LoaderText = Instance.new("TextLabel")
+LoaderText.Size = UDim2.new(1,0,0,26)
+LoaderText.Position = UDim2.new(0,0,0,14)
+LoaderText.BackgroundTransparency = 1
+LoaderText.Text = "48x On Top"
+LoaderText.TextColor3 = Color3.new(1,1,1)
+LoaderText.TextSize = 18
+LoaderText.Font = Enum.Font.GothamBold
+LoaderText.Parent = Loader
+
+local Percent = Instance.new("TextLabel")
+Percent.Size = UDim2.new(1,0,0,40)
+Percent.Position = UDim2.new(0,0,0.5,-20)
+Percent.BackgroundTransparency = 1
+Percent.Text = "0%"
+Percent.TextColor3 = Color3.fromRGB(200,160,255)
+Percent.TextSize = 28
+Percent.Font = Enum.Font.GothamBold
+Percent.Parent = Loader
+
+local Status = Instance.new("TextLabel")
+Status.Size = UDim2.new(1,0,0,18)
+Status.Position = UDim2.new(0,0,1,-28)
+Status.BackgroundTransparency = 1
+Status.Text = "Initializing..."
+Status.TextColor3 = Color3.fromRGB(180,150,255)
+Status.TextSize = 11
+Status.Font = Enum.Font.Gotham
+Status.Parent = Loader
+
+local Ring = {}
+
+for i = 1,10 do
+
+    local Dot = Instance.new("Frame")
+
+    local ang = math.rad(i * 36)
+
+    Dot.Size = UDim2.new(0,8,0,8)
+
+    Dot.Position = UDim2.new(
+        0.5,
+        math.cos(ang) * 38,
+        0.5,
+        math.sin(ang) * 38
+    )
+
+    Dot.BackgroundColor3 = Color3.fromRGB(130,70,255)
+    Dot.BorderSizePixel = 0
+    Dot.Parent = Loader
+
+    corner(Dot,20)
+
+    table.insert(Ring,Dot)
+end
+
+local spinning = false
+
+local function startSpin()
+
+    spinning = true
+
+    task.spawn(function()
+
+        local index = 1
+
+        while spinning do
+
+            for i,d in ipairs(Ring) do
+
+                local active = i == index
+
+                tween(
+                    d,
+                    {
+                        Size = active and UDim2.new(0,14,0,14) or UDim2.new(0,8,0,8),
+                        BackgroundTransparency = active and 0 or 0.55
+                    },
+                    0.08
+                ):Play()
+            end
+
+            index += 1
+
+            if index > #Ring then
+                index = 1
+            end
+
+            task.wait(0.05)
+        end
+    end)
+end
+
+local function stopSpin()
+    spinning = false
+end
+
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- CARD EFFECTS
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Card.MouseEnter:Connect(function()
+
+    tween(
+        Card,
+        {BackgroundColor3 = Color3.fromRGB(38,20,70)},
+        0.15
+    ):Play()
+end)
+
+Card.MouseLeave:Connect(function()
+
+    tween(
+        Card,
+        {BackgroundColor3 = Color3.fromRGB(22,14,45)},
+        0.15
+    ):Play()
+end)
+
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- SCRIPT EXECUTION
+--━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Card.MouseButton1Click:Connect(function()
+
+    Loader.Visible = true
+
+    startSpin()
+
+    task.spawn(function()
+
+        local pct = 0
+
+        while pct < 100 do
+
+            pct += math.random(2,5)
+
+            if pct > 100 then
+                pct = 100
+            end
+
+            Percent.Text = pct .. "%"
+
+            if pct >= 20 then
+                Status.Text = "Connecting..."
+            end
+
+            if pct >= 50 then
+                Status.Text = "Injecting..."
+            end
+
+            if pct >= 80 then
+                Status.Text = "Launching..."
+            end
+
+            task.wait(0.05)
+        end
+
+        stopSpin()
+
+        Percent.Text = "✔"
+        Status.Text = "Loaded Successfully"
+
+        for _,d in pairs(Ring) do
+            tween(
+                d,
+                {
+                    BackgroundColor3 = Color3.fromRGB(50,255,120),
+                    Size = UDim2.new(0,12,0,12)
+                },
+                0.2
+            ):Play()
+        end
+
+        local ok,err = executeScript(SCRIPTS[1].url)
+
+        if not ok then
+
+            Percent.Text = "✕"
+            Status.Text = "Load Failed"
+
+            warn(err)
+        end
+
+        task.wait(0.8)
+
+        Loader.Visible = false
+
+        -- AUTO CLOSE HUB
+        tween(
+            Hub,
+            {
+                Size = UDim2.new(0,HUB_W,0,0),
+                BackgroundTransparency = 1
+            },
+            0.35,
+            Enum.EasingStyle.Back,
+            Enum.EasingDirection.In
+        ):Play()
+
+        task.wait(0.4)
+
+        SG:Destroy()
+    end)
+end)
